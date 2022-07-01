@@ -1,0 +1,32 @@
+header{
+  width: 100%;
+  background: #FFFFFF;
+  .innerHeader{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    @media only screen and (min-width: 1170px){
+        padding: 13px 0;
+        max-width: 1170px;
+        margin: 0 auto;
+    }
+    @media (min-width: 1025px) and (max-width: 1170px){
+        padding: 13px 60px;
+    }
+    @media (min-width: 769px) and (max-width: 1024px){
+        padding: 13px 32px;
+    }
+    @media only screen and (max-width: 768px){
+        padding: 13px 16px;
+    }
+    .coverBtn{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .btn_custom:first-child{
+        margin-right: 10px;
+      }
+    }
+  }
+
+}
