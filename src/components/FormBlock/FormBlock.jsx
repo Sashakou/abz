@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import * as axios from "axios";
 import RegForm from './RegForm';
 import Alert from "../Alert/Alert";
+import {testDataCreator} from "../../redux/appReducer";
+import {reset} from "redux-form";
+import { connect } from "react-redux";
 
 function FormBlock(props) {
     const [isLoading, setIsLoading] = useState(true);
@@ -20,72 +23,57 @@ function FormBlock(props) {
         GetToken();
     }
 
-    const regUser = (data, token) => {
+    const regUser = async (data, token) => {
         setIsLoading(true);
-        axios.post(
-            `https://frontend-test-assignment-api.abz.agency/api/v1/users`,
-            {
+        try {
+            let dataNewUser = {
                 'name': `${data.name}`,
                 'email': `${data.email}`,
                 'phone': `${data.phone}`,
                 'photo': data.photo,
-                'position_id': data.position_id,
-            },
-            {
+                'position_id': data.position_id
+            };
+            let headers = {
                 headers: {
                     'Token' : token,
                     "content-type": "multipart/form-data"
                 }
-            })
-            .then((response) => {
-                if(response.success === true){
-                    setIsLoading(false);
-                    setSuccessfullyReg(true);
-                    props.GetUsers('firstPage')
-                }
-            })
-            .catch((error) => {
-                if(error.response.data.success === false){
-                    onShowAlert('error', error.response.data.message);
-                    setPositions([]);
-                }
-            });
-    }
-    const GetToken= () => {
-        setIsLoading(true);
-        axios.get(
-            'https://frontend-test-assignment-api.abz.agency/api/v1/token',
-            {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+            };
+            const response = await axios.post('https://frontend-test-assignment-api.abz.agency/api/v1/users', dataNewUser, headers);
+            if(response.data.success === true){
+                setSuccessfullyReg(true);
+                props.GetUsers('firstPage')
             }
-        )
-            .then((response) => {
-                setToken(response.data.token);
-                setIsLoading(false);
-            })
-            .catch((error) => {
+        } catch (error) {
+            if(error.response.data.success === false){
                 onShowAlert('error', error.response.data.message);
-            });
-    }
-    const GetPositions= () => {
-        setIsLoading(true);
-        axios.get(
-            'https://frontend-test-assignment-api.abz.agency/api/v1/positions',
-            {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                setPositions([]);
             }
-        )
-            .then((response) => {
-                setPositions(response.data.positions);
-                setIsLoading(false);
-            })
-            .catch((error) => {
-                onShowAlert('error', error.response.data.message);
-            });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    const GetToken = async () => {
+        setIsLoading(true);
+        try {
+            const response = await axios.get('https://frontend-test-assignment-api.abz.agency/api/v1/token');
+            setToken(response.data.token);
+        } catch (error) {
+            onShowAlert('error', error.response.data.message);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    const GetPositions = async () => {
+        setIsLoading(true);
+        try {
+            const response = await axios.get('https://frontend-test-assignment-api.abz.agency/api/v1/positions');
+            setPositions(response.data.positions);
+        } catch (error) {
+            onShowAlert('error', error.response.data.message);
+        } finally {
+            setIsLoading(false);
+        }
     }
     let onCloseAlert = () => {
         setAlert({
@@ -145,4 +133,19 @@ function FormBlock(props) {
         </section>
     );
 }
-export default FormBlock;
+const mapStateToProps = (state) => {
+    return {
+        appState: state.appState,
+    }
+}
+let mapDispatchToProps = (dispatch) => {
+    return {
+        testData: (val) => {
+            dispatch( testDataCreator( val ) );
+        },
+        resetForm: (val) => {
+            dispatch(reset(val));
+        }
+    }
+}
+export default connect(mapStateToProps, mapDispatchToProps)(FormBlock);

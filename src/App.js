@@ -1,43 +1,30 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import './App.scss';
 import Header from "./components/Header/Header";
-//import CardsBlock from "./components/CardsBlock/CardsBlock";
-import store from './redux/redux-store';
-import { Provider } from 'react-redux';
-//import FormBlockContainer from "./components/FormBlock/FormBlockContainer";
 import * as axios from "axios";
 import Alert from "./components/Alert/Alert";
 const CardsBlockLazy = lazy(() => import("./components/CardsBlock/CardsBlock"));
-const FormBlockContainerLazy = lazy(() => import("./components/FormBlock/FormBlockContainer"));
+const FormBlockContainerLazy = lazy(() => import("./components/FormBlock/FormBlock"));
 
 function App() {
     const [alert, setAlert] = useState({});
     const [users, setUsers] = useState([]);
     const [btnDisabled, setBtnDisabled] = useState(false);
     const [url, setUrl] = useState('https://frontend-test-assignment-api.abz.agency/api/v1/users?page=1&count=6');
-    const GetUsers= (firstPage) => {
-        let urlGet = 'https://frontend-test-assignment-api.abz.agency/api/v1/users?page=1&count=6';
-        if(firstPage === undefined) urlGet = url;
-        axios.get(
-            urlGet,
-            {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+    const GetUsers = async (firstPage) => {
+        try {
+            let urlGet = 'https://frontend-test-assignment-api.abz.agency/api/v1/users?page=1&count=6';
+            if(firstPage === undefined) urlGet = url;
+            const response = await axios.get(urlGet);
+            setUsers(response.data.users)
+            if(response.data.total_pages === response.data.page){
+                setBtnDisabled(true);
+            }else{
+                setUrl(response.data.links.next_url);
             }
-        )
-            .then((response) => {
-                setUsers(response.data.users)
-
-                if(response.data.total_pages === response.data.page){
-                    setBtnDisabled(true);
-                }else{
-                    setUrl(response.data.links.next_url);
-                }
-            })
-            .catch((error) => {
-                onShowAlert('error', error.response.data.message);
-            });
+        } catch (error) {
+            onShowAlert('error', error.response.data.message);
+        }
     }
     let onCloseAlert = () => {
         setAlert({
@@ -63,7 +50,7 @@ function App() {
         )
     };
   return (
-    <Provider store={store}>
+    <>
       <Header/>
       <main>
         <section className="backgroundBlock">
@@ -77,11 +64,9 @@ function App() {
               <CardsBlockLazy GetUsers={GetUsers} users={users} btnDisabled={btnDisabled}/>
               <FormBlockContainerLazy GetUsers={GetUsers}/>
           </Suspense>
-        {/*<CardsBlock GetUsers={GetUsers} users={users} btnDisabled={btnDisabled}/>*/}
-        {/*<FormBlockContainer GetUsers={GetUsers}/>*/}
         <Alert alert={alert} close={onCloseAlert}/>
       </main>
-    </Provider>
+    </>
   );
 }
 

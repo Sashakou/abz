@@ -50,17 +50,18 @@ let  renderFileInput = ({input, accept, type, meta, placeholder, defaultValue, n
     return (
         <div className={`coverFileInput ${ meta.touched && meta.error ? 'coverFileInput_Error' : '' }`}>
             <div className="fileInput">
-                <div className="btnUpload">Upload</div>
                 <div className="innerInput">
+                    <div className="btnUpload">Upload</div>
                     <input
                         {...input}
-                        //name={name}
                         type={type}
                         accept={accept}
                         value={defaultValue}
                         onChange={event => handleChange(event, input)}
                     />
-                    <label htmlFor="upload" >{placeholder}</label>
+                    <div className="coverLabel">
+                        <label htmlFor="upload" >{placeholder}</label>
+                    </div>
                 </div>
             </div>
             {meta.touched && meta.error ? <span className="meta_touched_&&_meta_error">{meta.error}</span> : ''}
@@ -68,7 +69,6 @@ let  renderFileInput = ({input, accept, type, meta, placeholder, defaultValue, n
     );
 };
 const renderFieldRadio = ({ input, label, type, checked, id, meta, name }) => {
-    //console.log(id);
     return(
         <div className="innerBlock">
             <input {...input} type={type} checked={checked} value={id} id={id}/>
@@ -102,28 +102,25 @@ let maxWeight = 5242880,
     maxWidth = 70,
     maxHeight = 70;
 let validateImageWeight = imageFile => {
-    //console.log(imageFile);
     if (imageFile !== undefined) {
         if(imageFile.length === 1){
-            return imageFile[0].size < maxWeight  ? undefined : `User photo should be size must not exceed 5MB`;
+            return imageFile[0].size <= maxWeight  ? undefined : `User photo should be size must not exceed 5MB`;
         }else{
-            return imageFile.size < maxWeight  ? undefined : `User photo should be size must not exceed 5MB`;
+            return imageFile.size <= maxWeight  ? undefined : `User photo should be size must not exceed 5MB`;
         }
     }
 };
 let validateImageHeight = (imageFile) => {
     if (imageFile !== undefined) {
         if(imageFile.length === 1){
-            return imageFile[0].height >= maxHeight && imageFile[0].width > maxWidth ? undefined : `photo should be resolution at least 70x70px`;
+            return imageFile[0].height >= maxHeight && imageFile[0].width >= maxWidth ? undefined : `photo should be resolution at least 70x70px`;
         }else{
-            return imageFile.height >= maxHeight && imageFile.width > maxWidth ? undefined : `photo should be resolution at least 70x70px`;
+            return imageFile.height >= maxHeight && imageFile.width >= maxWidth ? undefined : `photo should be resolution at least 70x70px`;
         }
     }
 };
 let requiredPhoto = (imageFile) => {
-    //console.log(imageFile);
     if (imageFile !== undefined) {
-        //return imageFile.length === 0 ? `Required` : undefined;
         if(imageFile !== 'initialVal'){
             return imageFile.length === 0 ? `Required` : undefined;
         }else{
@@ -131,9 +128,7 @@ let requiredPhoto = (imageFile) => {
         }
     }
 };
-
 let handleChange = (event, input) => {
-    //console.log(event.target);
     event.preventDefault();
     let imageFile = event.target.files[0];
     if (imageFile) {
@@ -155,7 +150,6 @@ let RegForm = props => {
     const [isActivePhoneLabel, setIsActivePhoneLabel] = useState(false);
     const [namePhoto, setNamePhoto] = useState('Upload your photo');
     const { handleSubmit, load, pristine, submitting } = props;
-
     const handlerInputName = (e) => {
         if(name(e.target.value) === undefined){
             setIsActive(true);
@@ -268,15 +262,14 @@ let RegForm = props => {
 
 
 RegForm = reduxForm({
-    form: 'regform', // a unique identifier for this form
+    form: 'regform',
 })(RegForm);
 
-// You have to connect() to any reducers that you wish to connect to yourself
 RegForm = connect(
     state => ({
-        initialValues: state.account.data, // pull initial values from account reducer
+        initialValues: state.account.data,
     }),
-    { load: loadAccount }, // bind account loading action creator
+    { load: loadAccount }, 
 )(RegForm);
 
 export default RegForm;
